@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: 'Personal Accountant',
   description: 'AI-powered personal finance tracker with natural language interface',
   manifest: '/manifest.json',
+  applicationName: 'Accountant',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
@@ -15,6 +16,11 @@ export const metadata: Metadata = {
   },
   formatDetection: {
     telephone: false,
+    email: false,
+    address: false,
+  },
+  other: {
+    'mobile-web-app-capable': 'yes',
   },
 };
 
@@ -36,9 +42,15 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-192x192.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-192x192.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Accountant" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="msapplication-TileColor" content="#0a0a1a" />
+        <meta name="msapplication-tap-highlight" content="no" />
       </head>
       <body className={`${inter.className} safe-area-inset`}>
         {children}

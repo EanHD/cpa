@@ -54,20 +54,32 @@
   }
 }
 
-/* PWA Styles */
-html, body {
+/* PWA Styles - Critical for all platforms */
+html {
   height: 100%;
   height: -webkit-fill-available;
+  height: 100dvh;
+}
+
+body {
+  height: 100%;
+  height: -webkit-fill-available;
+  height: 100dvh;
   overflow: hidden;
   overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-#__next {
-  height: 100%;
-  height: -webkit-fill-available;
+/* Allow text selection in messages */
+.chat-container * {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
-/* Safe area for iPhone notch */
+/* Safe area for notches (iPhone, Android punch-holes) */
 .safe-area-inset {
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
@@ -75,7 +87,14 @@ html, body {
   padding-right: env(safe-area-inset-right);
 }
 
-/* Chat container */
+/* Ensure full height on all devices */
+main {
+  min-height: 100%;
+  min-height: -webkit-fill-available;
+  min-height: 100dvh;
+}
+
+/* Chat container - smooth scroll */
 .chat-container {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -83,16 +102,40 @@ html, body {
   overscroll-behavior: contain;
 }
 
-/* Hide scrollbar */
+/* Hide scrollbar on mobile, show thin on desktop */
 .chat-container::-webkit-scrollbar,
 .scrollbar-hide::-webkit-scrollbar {
+  width: 0;
   display: none;
+}
+
+@media (min-width: 768px) {
+  .chat-container::-webkit-scrollbar {
+    width: 6px;
+    display: block;
+  }
+  .chat-container::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .chat-container::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted));
+    border-radius: 3px;
+  }
+  .chat-container::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
 }
 
 .chat-container,
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+@media (min-width: 768px) {
+  .chat-container {
+    scrollbar-width: thin;
+  }
 }
 
 /* Animations */
@@ -120,20 +163,6 @@ html, body {
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes pulse-soft {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
-}
-
-@keyframes bounce-soft {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-4px);
   }
 }
 
@@ -181,16 +210,17 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
-/* Smooth transitions */
-* {
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+/* Better touch targets on mobile */
+@media (pointer: coarse) {
+  button, a {
+    min-height: 44px;
+  }
 }
 
-/* Better touch targets */
-@media (pointer: coarse) {
-  button, a, input {
-    min-height: 44px;
-    min-width: 44px;
+/* Desktop hover effects */
+@media (hover: hover) {
+  button:hover {
+    opacity: 0.9;
   }
 }
 
@@ -202,5 +232,17 @@ button:focus-visible {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* Prevent pull-to-refresh on mobile */
+body {
+  overscroll-behavior-y: contain;
+}
+
+/* Fix iOS input zoom */
+@media screen and (max-width: 768px) {
+  input, textarea, select {
+    font-size: 16px !important;
   }
 }
