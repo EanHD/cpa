@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { cn, parseMarkdown } from '@/lib/utils';
-import { User, Bot, Copy, Check, RefreshCw, Paperclip } from 'lucide-react';
+import { User, Copy, Check, Paperclip, Calculator } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -41,19 +41,19 @@ export function ChatMessage({ message, isLatest }: ChatMessageProps) {
     <div
       ref={messageRef}
       className={cn(
-        'group flex gap-3 px-4 py-4 transition-all duration-300',
+        'group flex gap-2.5 px-3 py-2 transition-all duration-300',
         isUser ? 'justify-end' : 'justify-start',
         isLatest && 'message-enter'
       )}
     >
       {!isUser && (
-        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center ring-1 ring-primary/10">
-          <Bot className="w-4 h-4 text-primary" />
+        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center">
+          <Calculator className="w-4 h-4 text-white" />
         </div>
       )}
       
       <div className={cn(
-        'relative max-w-[85%] sm:max-w-[75%]',
+        'relative max-w-[85%] sm:max-w-[80%]',
         isUser ? 'order-first' : ''
       )}>
         {/* File attachment indicator */}
@@ -65,15 +65,15 @@ export function ChatMessage({ message, isLatest }: ChatMessageProps) {
         )}
         <div
           className={cn(
-            'rounded-2xl px-4 py-3 shadow-sm',
+            'rounded-2xl px-3.5 py-2.5 shadow-sm',
             isUser
-              ? 'bg-primary text-primary-foreground rounded-br-md'
-              : 'bg-secondary/80 text-secondary-foreground rounded-bl-md',
+              ? 'bg-blue-600 text-white rounded-br-sm'
+              : 'bg-secondary text-secondary-foreground rounded-bl-sm',
             message.error && 'bg-destructive/10 border border-destructive/20'
           )}
         >
           <div
-            className="text-sm whitespace-pre-wrap break-words leading-relaxed"
+            className="text-[15px] leading-relaxed prose-sm prose-invert max-w-none"
             dangerouslySetInnerHTML={{ __html: parseMarkdown(message.content) }}
           />
         </div>
@@ -81,7 +81,7 @@ export function ChatMessage({ message, isLatest }: ChatMessageProps) {
         {/* Action buttons for assistant messages */}
         {!isUser && !message.error && (
           <div className={cn(
-            'absolute -bottom-6 left-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity'
+            'absolute -bottom-5 left-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity'
           )}>
             <button
               onClick={handleCopy}
@@ -89,9 +89,9 @@ export function ChatMessage({ message, isLatest }: ChatMessageProps) {
               aria-label={copied ? 'Copied' : 'Copy message'}
             >
               {copied ? (
-                <Check className="h-3.5 w-3.5 text-green-500" />
+                <Check className="h-3 w-3 text-green-500" />
               ) : (
-                <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                <Copy className="h-3 w-3 text-muted-foreground" />
               )}
             </button>
           </div>
@@ -99,8 +99,8 @@ export function ChatMessage({ message, isLatest }: ChatMessageProps) {
       </div>
       
       {isUser && (
-        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-          <User className="w-4 h-4 text-primary-foreground" />
+        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
+          <User className="w-4 h-4 text-white" />
         </div>
       )}
     </div>
@@ -109,18 +109,18 @@ export function ChatMessage({ message, isLatest }: ChatMessageProps) {
 
 export function LoadingMessage() {
   return (
-    <div className="flex gap-3 px-4 py-4 justify-start animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center ring-1 ring-primary/10">
-        <Bot className="w-4 h-4 text-primary animate-pulse" />
+    <div className="flex gap-2.5 px-3 py-2 justify-start animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center">
+        <Calculator className="w-4 h-4 text-white" />
       </div>
-      <div className="bg-secondary/80 rounded-2xl rounded-bl-md px-4 py-3 shadow-sm">
-        <div className="flex items-center gap-1">
+      <div className="bg-secondary rounded-2xl rounded-bl-sm px-3.5 py-2.5 shadow-sm">
+        <div className="flex items-center gap-2">
           <div className="flex gap-1">
-            <span className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-            <span className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-            <span className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            <span className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+            <span className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+            <span className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
           </div>
-          <span className="text-xs text-muted-foreground ml-2">Thinking...</span>
+          <span className="text-xs text-muted-foreground">Calculating...</span>
         </div>
       </div>
     </div>

@@ -240,6 +240,11 @@ body {
   overscroll-behavior-y: contain;
 }
 
+/* Safe area padding for input */
+.pb-safe {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+
 /* Fix iOS input zoom */
 @media screen and (max-width: 768px) {
   input, textarea, select {
