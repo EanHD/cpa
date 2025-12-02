@@ -1,11 +1,7 @@
 'use client';
 
-import { Chat } from '@/components/Chat';
+import { ChatApp } from '@/components/ChatApp';
 
 export default function Home() {
-  return (
-    <main className="h-screen w-screen overflow-hidden">
-      <Chat />
-    </main>
-  );
+  return <ChatApp />;
 }

@@ -1,17 +1,15 @@
 {
-  "name": "Personal Accountant",
+  "name": "Accountant",
   "short_name": "Accountant",
-  "description": "AI-powered personal finance tracker with natural language interface",
+  "description": "Personal finance tracker",
   "start_url": "/",
   "id": "/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
-  "background_color": "#0a0a1a",
-  "theme_color": "#0a0a1a",
+  "display_override": ["standalone"],
+  "background_color": "#050816",
+  "theme_color": "#050816",
   "orientation": "any",
   "scope": "/",
-  "lang": "en",
-  "dir": "ltr",
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
@@ -38,21 +36,6 @@
       "purpose": "maskable"
     }
   ],
-  "categories": ["finance", "productivity", "utilities"],
-  "shortcuts": [
-    {
-      "name": "Add Transaction",
-      "short_name": "Add",
-      "description": "Quickly add a new transaction",
-      "url": "/?action=add",
-      "icons": [
-        {
-          "src": "/icons/icon-192x192.png",
-          "sizes": "192x192"
-        }
-      ]
-    }
-  ],
-  "prefer_related_applications": false,
-  "handle_links": "preferred"
+  "categories": ["finance", "productivity"],
+  "prefer_related_applications": false
 }

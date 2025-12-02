@@ -1,13 +1,14 @@
-# Tailscale HTTPS mode (when CADDY_DOMAIN is set to hostname.tail*.ts.net)
+# Auto-detect: if CADDY_DOMAIN is set to a .ts.net hostname, use certs
+# Otherwise, serve on port 80 without TLS
+
 {$CADDY_DOMAIN::80} {
     reverse_proxy frontend:3000
     
-    # Use Tailscale certs if available
-    tls /certs/{$CADDY_DOMAIN}.crt /certs/{$CADDY_DOMAIN}.key
-    
     header {
-        Strict-Transport-Security "max-age=31536000; includeSubDomains"
         X-Content-Type-Options "nosniff"
         X-Frame-Options "DENY"
     }
 }
+
+# For Tailscale HTTPS, set CADDY_DOMAIN=hostname.tail*.ts.net
+# and mount certs to /certs/

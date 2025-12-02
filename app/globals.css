@@ -25,23 +25,23 @@
   }
 
   .dark {
-    --background: 224 71% 4%;
+    --background: 228 84% 5%;
     --foreground: 213 31% 91%;
-    --card: 224 71% 4%;
+    --card: 224 50% 8%;
     --card-foreground: 213 31% 91%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 222 47% 11%;
+    --primary: 142 71% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 224 50% 8%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 223 47% 11%;
-    --muted-foreground: 215.4 16.3% 56.9%;
-    --accent: 216 34% 17%;
-    --accent-foreground: 210 40% 98%;
+    --muted: 224 40% 12%;
+    --muted-foreground: 215 16% 57%;
+    --accent: 142 71% 45%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
-    --border: 216 34% 17%;
-    --input: 216 34% 17%;
-    --ring: 224 64% 33%;
+    --border: 224 30% 15%;
+    --input: 224 30% 15%;
+    --ring: 142 71% 45%;
   }
 }
 
@@ -49,100 +49,381 @@
   * {
     @apply border-border;
   }
+  html, body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #050816;
+    color: #e5e7eb;
+  }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply antialiased;
   }
 }
 
-/* PWA Styles - Critical for all platforms */
+/* iOS PWA - Critical viewport handling */
 html {
   height: 100%;
   height: -webkit-fill-available;
   height: 100dvh;
+  background: #050816;
 }
 
 body {
   height: 100%;
   height: -webkit-fill-available;
   height: 100dvh;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
   overflow: hidden;
   overscroll-behavior: none;
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
 }
 
-/* Allow text selection in messages */
+/* App shell container */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  height: 100dvh;
+  height: -webkit-fill-available;
+  max-width: 480px;
+  margin: 0 auto;
+  background: #050816;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Header - iOS nav bar style */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: 56px;
+  min-height: 56px;
+  padding-top: env(safe-area-inset-top);
+  background: rgba(5, 8, 22, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+}
+
+/* Dashboard cards row */
+.dashboard-strip {
+  flex-shrink: 0;
+  padding: 12px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.dashboard-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.dashboard-cards {
+  display: flex;
+  gap: 10px;
+  padding: 0 16px;
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+}
+
+.dashboard-card {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #111827;
+  border-radius: 20px;
+  min-width: fit-content;
+}
+
+.dashboard-card-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.dashboard-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.dashboard-card-label {
+  font-size: 11px;
+  color: #9CA3AF;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.dashboard-card-value {
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Chat container */
+.chat-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 12px 0;
+  scroll-behavior: smooth;
+}
+
+.chat-container::-webkit-scrollbar {
+  display: none;
+}
+
+.chat-container {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* Allow text selection in chat */
 .chat-container * {
   -webkit-user-select: text;
   user-select: text;
 }
 
-/* Safe area for notches (iPhone, Android punch-holes) */
-.safe-area-inset {
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
+/* Chat messages wrapper */
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 12px;
+  padding-left: max(12px, env(safe-area-inset-left));
+  padding-right: max(12px, env(safe-area-inset-right));
 }
 
-/* Ensure full height on all devices */
-main {
-  min-height: 100%;
-  min-height: -webkit-fill-available;
-  min-height: 100dvh;
+/* Message bubbles */
+.message-bubble {
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 20px;
+  font-size: 15px;
+  line-height: 1.4;
+  animation: fadeInUp 0.25s ease-out;
 }
 
-/* Chat container - smooth scroll */
-.chat-container {
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-  overscroll-behavior: contain;
+.message-bubble.user {
+  align-self: flex-end;
+  background: #16a34a;
+  color: white;
+  border-bottom-right-radius: 6px;
 }
 
-/* Hide scrollbar on mobile, show thin on desktop */
-.chat-container::-webkit-scrollbar,
-.scrollbar-hide::-webkit-scrollbar {
-  width: 0;
-  display: none;
+.message-bubble.assistant {
+  align-self: flex-start;
+  background: #111827;
+  color: #e5e7eb;
+  border-bottom-left-radius: 6px;
 }
 
-@media (min-width: 768px) {
-  .chat-container::-webkit-scrollbar {
-    width: 6px;
-    display: block;
-  }
-  .chat-container::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .chat-container::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted));
-    border-radius: 3px;
-  }
-  .chat-container::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground));
-  }
+/* Message content formatting */
+.message-content {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
-.chat-container,
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.message-content strong {
+  font-weight: 600;
 }
 
-@media (min-width: 768px) {
-  .chat-container {
-    scrollbar-width: thin;
-  }
+.message-content em {
+  font-style: italic;
 }
 
-/* Animations */
+.message-content code {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: ui-monospace, monospace;
+  font-size: 13px;
+}
+
+.message-content h1, .message-content h2, .message-content h3 {
+  font-weight: 600;
+  margin-top: 12px;
+  margin-bottom: 6px;
+}
+
+.message-content h1 { font-size: 18px; }
+.message-content h2 { font-size: 16px; }
+.message-content h3 { font-size: 15px; }
+
+.message-content ul, .message-content ol {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.message-content li {
+  margin: 4px 0;
+}
+
+/* Summary card in messages */
+.message-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 12px;
+  margin: 8px 0;
+}
+
+.message-card-header {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9CA3AF;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 8px;
+}
+
+/* Input bar - iOS style */
+.input-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 50;
+  background: rgba(5, 8, 22, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 10px 12px;
+  padding-left: max(12px, env(safe-area-inset-left));
+  padding-right: max(12px, env(safe-area-inset-right));
+  padding-bottom: max(10px, env(safe-area-inset-bottom));
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.input-field {
+  flex: 1;
+  background: #111827;
+  border: none;
+  border-radius: 22px;
+  padding: 10px 16px;
+  font-size: 16px;
+  color: #e5e7eb;
+  resize: none;
+  min-height: 44px;
+  max-height: 120px;
+  line-height: 1.4;
+  outline: none;
+}
+
+.input-field::placeholder {
+  color: #6B7280;
+}
+
+.input-field:focus {
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.3);
+}
+
+.send-button {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #16a34a;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.send-button:active {
+  transform: scale(0.95);
+}
+
+.send-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.send-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Attachment button */
+.attach-button {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9CA3AF;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.attach-button:active {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Loading dots */
+.loading-dots {
+  display: flex;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.loading-dot {
+  width: 8px;
+  height: 8px;
+  background: #6B7280;
+  border-radius: 50%;
+  animation: loadingBounce 1.2s ease-in-out infinite;
+}
+
+.loading-dot:nth-child(2) { animation-delay: 0.15s; }
+.loading-dot:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes loadingBounce {
+  0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -150,104 +431,101 @@ main {
   }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 24px;
+  gap: 16px;
 }
 
-@keyframes slideInFromBottom {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.empty-state-icon {
+  width: 72px;
+  height: 72px;
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
 }
 
-.message-enter {
-  animation: fadeInUp 0.3s ease-out;
+.empty-state-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #e5e7eb;
 }
 
-.animate-in {
-  animation: fadeInUp 0.3s ease-out;
+.empty-state-subtitle {
+  font-size: 14px;
+  color: #9CA3AF;
+  max-width: 260px;
 }
 
-.fade-in {
-  animation: fadeIn 0.2s ease-out;
+/* Quick actions */
+.quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 8px;
 }
 
-.slide-in-from-bottom-2 {
-  animation: slideInFromBottom 0.3s ease-out;
+.quick-action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #111827;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  color: #e5e7eb;
+  cursor: pointer;
+  transition: background 0.15s;
 }
 
-/* Loading animation */
-@keyframes bounce {
-  0%, 80%, 100% {
-    transform: scale(0.8);
-    opacity: 0.5;
-  }
-  40% {
-    transform: scale(1);
-    opacity: 1;
-  }
+.quick-action:active {
+  background: #1f2937;
 }
 
-.animate-bounce {
-  animation: bounce 1.2s ease-in-out infinite;
+/* Utility colors */
+.text-money-positive { color: #22c55e; }
+.text-money-negative { color: #ef4444; }
+.text-money-neutral { color: #3b82f6; }
+.bg-money-positive { background: rgba(34, 197, 94, 0.15); }
+.bg-money-negative { background: rgba(239, 68, 68, 0.15); }
+.bg-money-neutral { background: rgba(59, 130, 246, 0.15); }
+
+/* Prevent iOS rubber banding showing white */
+html::before {
+  content: '';
+  position: fixed;
+  top: -100px;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: #050816;
+  z-index: 9999;
 }
 
-/* Tabular numbers for financial data */
-.tabular-nums {
-  font-variant-numeric: tabular-nums;
+html::after {
+  content: '';
+  position: fixed;
+  bottom: -100px;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: #050816;
+  z-index: 9999;
 }
 
-/* Focus styles */
-input:focus-visible,
-button:focus-visible {
-  outline: 2px solid hsl(var(--ring));
-  outline-offset: 2px;
-}
-
-/* Better touch targets on mobile */
-@media (pointer: coarse) {
-  button, a {
-    min-height: 44px;
-  }
-}
-
-/* Desktop hover effects */
-@media (hover: hover) {
-  button:hover {
-    opacity: 0.9;
-  }
-}
-
-/* Reduce motion for accessibility */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* Prevent pull-to-refresh on mobile */
-body {
-  overscroll-behavior-y: contain;
-}
-
-/* Safe area padding for input */
-.pb-safe {
-  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
-}
-
-/* Fix iOS input zoom */
-@media screen and (max-width: 768px) {
-  input, textarea, select {
-    font-size: 16px !important;
+/* Fix iOS keyboard behavior */
+@supports (-webkit-touch-callout: none) {
+  .app-shell {
+    height: 100%;
   }
 }
