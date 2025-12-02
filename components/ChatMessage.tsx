@@ -1,0 +1,120 @@
+'use client';
+
+import React, { useEffect, useRef } from 'react';
+import { cn, parseMarkdown } from '@/lib/utils';
+import { User, Bot, Copy, Check, RefreshCw } from 'lucide-react';
+
+interface Message {
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: string;
+  pending?: boolean;
+  error?: boolean;
+}
+
+interface ChatMessageProps {
+  message: Message;
+  isLatest?: boolean;
+}
+
+export function ChatMessage({ message, isLatest }: ChatMessageProps) {
+  const isUser = message.role === 'user';
+  const [copied, setCopied] = React.useState(false);
+  const messageRef = useRef<HTMLDivElement>(null);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(message.content);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Animate in effect for latest message
+  useEffect(() => {
+    if (isLatest && messageRef.current) {
+      messageRef.current.classList.add('animate-in');
+    }
+  }, [isLatest]);
+
+  return (
+    <div
+      ref={messageRef}
+      className={cn(
+        'group flex gap-3 px-4 py-4 transition-all duration-300',
+        isUser ? 'justify-end' : 'justify-start',
+        isLatest && 'message-enter'
+      )}
+    >
+      {!isUser && (
+        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center ring-1 ring-primary/10">
+          <Bot className="w-4 h-4 text-primary" />
+        </div>
+      )}
+      
+      <div className={cn(
+        'relative max-w-[85%] sm:max-w-[75%]',
+        isUser ? 'order-first' : ''
+      )}>
+        <div
+          className={cn(
+            'rounded-2xl px-4 py-3 shadow-sm',
+            isUser
+              ? 'bg-primary text-primary-foreground rounded-br-md'
+              : 'bg-secondary/80 text-secondary-foreground rounded-bl-md',
+            message.error && 'bg-destructive/10 border border-destructive/20'
+          )}
+        >
+          <div
+            className="text-sm whitespace-pre-wrap break-words leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: parseMarkdown(message.content) }}
+          />
+        </div>
+        
+        {/* Action buttons for assistant messages */}
+        {!isUser && !message.error && (
+          <div className={cn(
+            'absolute -bottom-6 left-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity'
+          )}>
+            <button
+              onClick={handleCopy}
+              className="p-1 rounded hover:bg-secondary transition-colors"
+              aria-label={copied ? 'Copied' : 'Copy message'}
+            >
+              {copied ? (
+                <Check className="h-3.5 w-3.5 text-green-500" />
+              ) : (
+                <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+              )}
+            </button>
+          </div>
+        )}
+      </div>
+      
+      {isUser && (
+        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+          <User className="w-4 h-4 text-primary-foreground" />
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function LoadingMessage() {
+  return (
+    <div className="flex gap-3 px-4 py-4 justify-start animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center ring-1 ring-primary/10">
+        <Bot className="w-4 h-4 text-primary animate-pulse" />
+      </div>
+      <div className="bg-secondary/80 rounded-2xl rounded-bl-md px-4 py-3 shadow-sm">
+        <div className="flex items-center gap-1">
+          <div className="flex gap-1">
+            <span className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+            <span className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+            <span className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+          </div>
+          <span className="text-xs text-muted-foreground ml-2">Thinking...</span>
+        </div>
+      </div>
+    </div>
+  );
+}
