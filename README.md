@@ -12,7 +12,49 @@ A production-ready, self-hosted personal accountant chatbot with natural languag
 - 📈 **Charts**: Monthly income/expense visualization
 - 🔄 **Sync**: Background sync when back online
 
-## Quick Start
+## Production Deployment (cpa.eanhd.com)
+
+### 1. Cloudflare DNS Setup
+
+In Cloudflare, add an A record:
+- **Type**: A
+- **Name**: cpa
+- **Content**: Your server's public IP (or Tailscale IP if internal only)
+- **Proxy status**: DNS only (gray cloud) - Caddy handles SSL
+
+### 2. Deploy on Server
+
+```bash
+# SSH to your server
+ssh eanhd@code-e
+
+# Clone the repo
+git clone https://github.com/EanHD/cpa.git
+cd cpa
+
+# Configure environment
+cp .env.example .env
+
+# Generate Fernet key and add to .env
+python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+
+# Edit .env with your OpenRouter API key and the generated Fernet key
+nano .env
+
+# Deploy
+docker compose up --build -d
+```
+
+### 3. Firewall
+
+Ensure ports 80 and 443 are open on your server.
+
+### 4. Access
+
+- **Public**: https://cpa.eanhd.com
+- **Tailscale**: https://code-e:443 (or http://code-e:3000 for direct frontend)
+
+## Quick Start (Local Development)
 
 ### 1. Clone and Configure
 
