@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { 
   Send, Download, BarChart3, RefreshCw, Wifi, WifiOff, 
   Menu, X, Settings, History, TrendingUp, AlertCircle,
-  ChevronDown, Sparkles, Loader2
+  ChevronDown, Sparkles, Loader2, Paperclip, Image, FileText
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,7 @@ import { ChatMessage, LoadingMessage } from '@/components/ChatMessage';
 import { SnapshotDisplay } from '@/components/SnapshotDisplay';
 import { MonthlyChart } from '@/components/MonthlyChart';
 import { QuickActions } from '@/components/QuickActions';
-import { sendMessage, getState, getMonthlyData, exportCsv, isOnline, Snapshot, MonthlyDataPoint } from '@/lib/api';
+import { sendMessage, sendMessageWithFile, getState, getMonthlyData, exportCsv, isOnline, Snapshot, MonthlyDataPoint } from '@/lib/api';
 import { db, initializeApp } from '@/lib/db';
 import { cn } from '@/lib/utils';
 
@@ -25,6 +25,7 @@ interface Message {
   timestamp: string;
   pending?: boolean;
   error?: boolean;
+  fileName?: string;
 }
 
 const QUICK_PROMPTS = [
@@ -35,6 +36,8 @@ const QUICK_PROMPTS = [
   { icon: '🏦', text: 'Tax estimate', prompt: 'Calculate my tax estimate' },
   { icon: '📉', text: 'Spending', prompt: 'Analyze my spending this month' },
 ];
+
+const ACCEPTED_FILE_TYPES = "image/*,.pdf";
 
 export function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -49,8 +52,10 @@ export function Chat() {
   const [setupComplete, setSetupComplete] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   // Initialize app
@@ -141,25 +146,49 @@ export function Chat() {
     }
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
+  const clearSelectedFile = () => {
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || !threadId || isLoading) return;
+    if ((!input.trim() && !selectedFile) || !threadId || isLoading) return;
 
+    const messageContent = input.trim() || (selectedFile ? `Analyze this file: ${selectedFile.name}` : '');
     const userMessage: Message = {
       id: uuidv4(),
       role: 'user',
-      content: input.trim(),
+      content: messageContent,
       timestamp: new Date().toISOString(),
+      fileName: selectedFile?.name,
     };
 
     setMessages((prev) => [...prev, userMessage]);
     await db.messages.put(userMessage);
+    const fileToSend = selectedFile;
     setInput('');
+    setSelectedFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
     setIsLoading(true);
 
     try {
       if (navigator.onLine) {
-        const response = await sendMessage(threadId, userMessage.content);
+        let response;
+        if (fileToSend) {
+          response = await sendMessageWithFile(threadId, messageContent, fileToSend);
+        } else {
+          response = await sendMessage(threadId, messageContent);
+        }
         
         const assistantMessage: Message = {
           id: uuidv4(),
@@ -425,19 +454,57 @@ export function Chat() {
                 ))}
               </div>
             )}
+
+            {/* Selected file indicator */}
+            {selectedFile && (
+              <div className="flex items-center gap-2 mb-2 px-3 py-2 bg-secondary/50 rounded-lg">
+                {selectedFile.type.startsWith('image/') ? (
+                  <Image className="h-4 w-4 text-blue-400" />
+                ) : (
+                  <FileText className="h-4 w-4 text-red-400" />
+                )}
+                <span className="text-sm truncate flex-1">{selectedFile.name}</span>
+                <button
+                  type="button"
+                  onClick={clearSelectedFile}
+                  className="p-1 hover:bg-secondary rounded"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            )}
             
             <form onSubmit={handleSubmit} className="relative">
-              <div className="relative flex items-center">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept={ACCEPTED_FILE_TYPES}
+                onChange={handleFileSelect}
+                className="hidden"
+                aria-label="Upload file"
+              />
+              <div className="relative flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isLoading}
+                  className="h-10 w-10 rounded-xl flex-shrink-0"
+                  aria-label="Attach file"
+                >
+                  <Paperclip className="h-5 w-5" />
+                </Button>
                 <input
                   ref={inputRef}
                   type="text"
-                  placeholder="Type a transaction or ask a question..."
+                  placeholder={selectedFile ? "Add a message about this file..." : "Type a transaction or ask a question..."}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
                   disabled={isLoading}
                   className={cn(
-                    "w-full px-4 py-3 pr-12 rounded-2xl border bg-secondary/50 text-sm",
+                    "flex-1 px-4 py-3 pr-12 rounded-2xl border bg-secondary/50 text-sm",
                     "placeholder:text-muted-foreground/60",
                     "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50",
                     "disabled:opacity-50 disabled:cursor-not-allowed",
@@ -447,12 +514,12 @@ export function Chat() {
                 />
                 <Button 
                   type="submit" 
-                  disabled={isLoading || !input.trim()} 
+                  disabled={isLoading || (!input.trim() && !selectedFile)} 
                   size="icon"
                   className={cn(
                     "absolute right-2 h-8 w-8 rounded-xl",
                     "transition-all duration-200",
-                    input.trim() ? "opacity-100" : "opacity-50"
+                    (input.trim() || selectedFile) ? "opacity-100" : "opacity-50"
                   )}
                   aria-label="Send message"
                 >
@@ -466,7 +533,7 @@ export function Chat() {
             </form>
             
             <p className="text-xs text-muted-foreground/60 mt-2 text-center">
-              Examples: "Paid $50 for dinner" • "Sold 0.1 BTC for $4,200" • "What's my burn rate?"
+              Examples: "Paid $50 for dinner" • "Sold 0.1 BTC for $4,200" • 📎 Upload receipts or statements
             </p>
           </div>
         </div>

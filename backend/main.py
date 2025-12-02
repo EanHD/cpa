@@ -4,11 +4,12 @@ import json
 import csv
 import io
 import sqlite3
+import base64
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel
@@ -198,6 +199,30 @@ async def health_check():
     return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
 
 
+async def process_file_for_vision(file: UploadFile) -> tuple[str, str]:
+    """Process uploaded file and return base64 data and mime type."""
+    content = await file.read()
+    content_type = file.content_type or "application/octet-stream"
+    
+    if content_type.startswith("image/"):
+        # Direct image - encode as base64
+        base64_data = base64.b64encode(content).decode("utf-8")
+        return base64_data, content_type
+    elif content_type == "application/pdf":
+        # PDF - extract text or convert first page to image
+        try:
+            from pypdf import PdfReader
+            pdf = PdfReader(io.BytesIO(content))
+            text_content = ""
+            for page in pdf.pages[:5]:  # First 5 pages max
+                text_content += page.extract_text() + "\n"
+            return text_content, "text/plain"
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Could not process PDF: {str(e)}")
+    else:
+        raise HTTPException(status_code=400, detail=f"Unsupported file type: {content_type}")
+
+
 @app.post("/chat")
 async def chat(request: MessageRequest):
     """Process a chat message."""
@@ -215,6 +240,66 @@ async def chat(request: MessageRequest):
         "role": "user",
         "content": user_message
     })
+    
+    # Run through graph
+    config = {"configurable": {"thread_id": thread_id}}
+    
+    try:
+        graph = await get_compiled_graph()
+        result = await graph.ainvoke(state, config)
+        
+        # Save updated state
+        save_state(thread_id, result)
+        
+        # Get last assistant message
+        messages = result.get("messages", [])
+        last_message = messages[-1] if messages else {"role": "assistant", "content": "No response"}
+        
+        return {
+            "response": last_message.get("content", ""),
+            "snapshot": result.get("snapshot", {}),
+            "setup_complete": result.get("user_profile", {}).get("setup_complete", False),
+            "setup_step": result.get("setup_step", 0)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/chat/upload")
+async def chat_with_file(
+    thread_id: str = Form(...),
+    message: str = Form(default=""),
+    file: UploadFile = File(...)
+):
+    """Process a chat message with file attachment (receipt, statement, etc.)."""
+    # Process the file
+    file_data, file_type = await process_file_for_vision(file)
+    
+    # Load or create state
+    state = load_state(thread_id)
+    if not state:
+        state = create_default_state()
+        state["thread_id"] = thread_id
+    
+    # Build message content based on file type
+    if file_type == "text/plain":
+        # PDF text extraction
+        user_content = f"{message}\n\n[Extracted from uploaded PDF: {file.filename}]\n{file_data}"
+        state["messages"].append({
+            "role": "user",
+            "content": user_content
+        })
+    else:
+        # Image - use vision capability
+        user_content = message or f"Please analyze this receipt/document: {file.filename}"
+        state["messages"].append({
+            "role": "user",
+            "content": user_content,
+            "image": {
+                "data": file_data,
+                "mime_type": file_type
+            }
+        })
     
     # Run through graph
     config = {"configurable": {"thread_id": thread_id}}

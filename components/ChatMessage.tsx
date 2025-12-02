@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { cn, parseMarkdown } from '@/lib/utils';
-import { User, Bot, Copy, Check, RefreshCw } from 'lucide-react';
+import { User, Bot, Copy, Check, RefreshCw, Paperclip } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -11,6 +11,7 @@ interface Message {
   timestamp: string;
   pending?: boolean;
   error?: boolean;
+  fileName?: string;
 }
 
 interface ChatMessageProps {
@@ -55,6 +56,13 @@ export function ChatMessage({ message, isLatest }: ChatMessageProps) {
         'relative max-w-[85%] sm:max-w-[75%]',
         isUser ? 'order-first' : ''
       )}>
+        {/* File attachment indicator */}
+        {message.fileName && (
+          <div className="flex items-center gap-1.5 mb-1 text-xs text-muted-foreground">
+            <Paperclip className="h-3 w-3" />
+            <span>{message.fileName}</span>
+          </div>
+        )}
         <div
           className={cn(
             'rounded-2xl px-4 py-3 shadow-sm',

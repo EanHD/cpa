@@ -361,9 +361,24 @@ CURRENT SNAPSHOT:
                             for tx in recent_txs])
         api_messages.append({"role": "system", "content": f"RECENT TRANSACTIONS:\n{tx_list}"})
     
-    # Add conversation history
+    # Add conversation history (handle image messages for vision)
     for msg in messages[-20:]:  # Last 20 messages for context
-        api_messages.append({"role": msg["role"], "content": msg["content"]})
+        if msg.get("image"):
+            # Vision message with image
+            api_messages.append({
+                "role": msg["role"],
+                "content": [
+                    {"type": "text", "text": msg["content"]},
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:{msg['image']['mime_type']};base64,{msg['image']['data']}"
+                        }
+                    }
+                ]
+            })
+        else:
+            api_messages.append({"role": msg["role"], "content": msg["content"]})
     
     # Call LLM
     tools = format_tools_for_api()

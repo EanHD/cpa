@@ -60,6 +60,28 @@ export async function sendMessage(threadId: string, message: string): Promise<Ch
   return response.json();
 }
 
+export async function sendMessageWithFile(
+  threadId: string, 
+  message: string, 
+  file: File
+): Promise<ChatResponse> {
+  const formData = new FormData();
+  formData.append('thread_id', threadId);
+  formData.append('message', message);
+  formData.append('file', file);
+
+  const response = await fetch(`${getApiUrl()}/api/chat/upload`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+
+  return response.json();
+}
+
 export async function getState(threadId: string): Promise<StateResponse> {
   const response = await fetch(`${getApiUrl()}/api/state/${threadId}`);
   
