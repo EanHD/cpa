@@ -493,6 +493,12 @@ export function Chat() {
                   "h-9 w-9 rounded-full bg-emerald-600 hover:bg-emerald-700 flex-shrink-0",
                   (input.trim() || selectedFile) ? "opacity-100" : "opacity-50"
                 )}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
               </Button>
             </form>
           </div>
